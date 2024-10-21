@@ -54,10 +54,23 @@ class Maze():
 
     
     def _break_entrance_and_exit(self):
-        self._cells[0][0].has_top_wall = False
-        self._draw_cell(0, 0)
-        self._cells[-1][-1].has_bottom_wall = False
-        self._draw_cell(self.num_cols -1, self.num_rows - 1)
+        rnd_i1 = random.randrange(0, self.num_cols - 1)
+        rnd_j1 = random.choice((0, self.num_rows - 1))
+        rnd_j2 = random.randrange(0, self.num_rows - 1)
+        rnd_i2 = random.choice((0, self.num_cols - 1))
+        
+        if rnd_j1 == 0:
+            self._cells[rnd_i1][0].has_top_wall = False
+            self._draw_cell(rnd_i1, 0)
+        else:
+            self._cells[rnd_i1][rnd_j1].has_bottom_wall = False
+            self._draw_cell(rnd_i1, rnd_j1) 
+        if rnd_i2 == 0:
+            self._cells[rnd_i2][0].has_left_wall = False
+            self._draw_cell(rnd_i2, 0)
+        else:
+            self._cells[rnd_i2][rnd_j2].has_right_wall = False
+            self._draw_cell(rnd_i2, rnd_j2)
 
 
     def _break_walls_r(self, i, j):
@@ -120,6 +133,78 @@ class Maze():
         for i in range(self.num_cols):
             for j in range(self.num_rows):
                 self._cells[i][j].visited = False            
+
+
+    def _solve_r(self, i, j, exits, check=0):
+        self.animate()
+        current_cell = self._cells[i][j]
+        current_cell.visited = True
+        # Check of return result (2 = Exits found, 1 = Need to backtrack, 0 = Continue)
+        check = 0
+
+        # Checking if exit cell was found
+        if i == 0 and current_cell.has_left_wall == False:
+            exits.append((i, j))
+            if len(exits) == 1:
+                current_cell.draw_circle(self.cell_size_x / 2)
+        if i == self.num_cols - 1 and current_cell.has_right_wall == False:
+            exits.append((i, j))
+            if len(exits) == 1:
+                current_cell.draw_circle(self.cell_size_x / 2)
+        if j == 0 and current_cell.has_top_wall == False:
+            exits.append((i, j))
+            if len(exits) == 1:
+                current_cell.draw_circle(self.cell_size_x / 2)
+        if j == self.num_rows - 1 and current_cell.has_bottom_wall == False:
+            exits.append((i, j))
+            if len(exits) == 1:
+                current_cell.draw_circle(self.cell_size_x / 2)
+        if len(exits) == 2:
+            current_cell.draw_circle(self.cell_size_x / 2)
+            self.animate()
+            return exits, 2
+        
+        # Checking and going in each direction
+        if (i - 1) >= 0 and self._cells[i - 1][j].visited == False and self._cells[i - 1][j].has_right_wall == False:
+            current_cell.draw_move(self._cells[i - 1][j])
+            exits, new_check = self._solve_r(i - 1, j, exits)
+            if new_check == 2:
+                return exits, 2
+            elif new_check == 1:
+                current_cell.draw_move(self._cells[i - 1][j], undo=True)
+        if (i + 1) < self.num_cols and self._cells[i + 1][j].visited == False and self._cells[i + 1][j].has_left_wall == False:
+            current_cell.draw_move(self._cells[i + 1][j])
+            exits, new_check = self._solve_r(i + 1, j, exits)
+            if new_check == 2:
+                return exits, 2
+            elif new_check == 1:
+                current_cell.draw_move(self._cells[i + 1][j], undo=True)
+        if (j - 1) >= 0 and self._cells[i][j - 1].visited == False and self._cells[i][j - 1].has_bottom_wall == False:
+            current_cell.draw_move(self._cells[i][j - 1])
+            exits, new_check = self._solve_r(i, j - 1, exits)
+            if new_check == 2:
+                return exits, 2
+            elif new_check == 1:
+                current_cell.draw_move(self._cells[i][j - 1], undo=True)
+        if (j + 1) < self.num_rows and self._cells[i][j + 1].visited == False and self._cells[i][j + 1].has_top_wall == False:
+            current_cell.draw_move(self._cells[i][j + 1])
+            exits, new_check = self._solve_r(i, j + 1, exits)
+            if new_check == 2:
+                return exits, 2
+            elif new_check == 1:
+                current_cell.draw_move(self._cells[i][j + 1], undo=True)
+
+        return exits, 1
+
+
+    def solve(self):
+        exits = []
+        check = 0
+        exits, check = self._solve_r(0, 0, exits, check)
+        if len(exits) == 2 and check == 2:
+            print(f"Two exits found at i{exits[0][0]} & j{exits[0][1]} and i{exits[1][0]} & j{exits[1][1]}!")
+        else:
+            print("No exits found!")
 
 
     def animate(self):

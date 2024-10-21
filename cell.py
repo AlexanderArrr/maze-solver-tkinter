@@ -45,12 +45,21 @@ class Cell:
             self.win.draw_line(Line(Point(self.x1, self.y2), Point(self.x2, self.y2)), bgcolor)
 
     def draw_move(self, to_cell, undo=False):
-        line_color = "red"
+        line_color = "black"
         if undo:
-            line_color = "blue"
+            line_color = "red"
         from_center_x = self.x1 + abs(((self.x2 - self.x1) // 2))
         from_center_y = self.y1 + abs(((self.y2 - self.y1) // 2))
         to_center_x = to_cell.x1 + abs(((to_cell.x2 - to_cell.x1) // 2))
         to_center_y = to_cell.y1 + abs(((to_cell.y2 - to_cell.y1) // 2))
         self.win.draw_line(Line(Point(from_center_x, from_center_y), Point(to_center_x, to_center_y)), line_color)
+
+    def draw_circle(self, r):
+        from_center_x = self.x1 + abs(((self.x2 - self.x1) // 2))
+        from_center_y = self.y1 + abs(((self.y2 - self.y1) // 2))
+        x0 = from_center_x - r
+        y0 = from_center_y - r
+        x1 = from_center_x + r
+        y1 = from_center_y + r
+        self.win.canvas.create_oval(x0, y0, x1, y1)
         
